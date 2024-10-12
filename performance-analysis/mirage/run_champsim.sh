@@ -11,7 +11,7 @@ BINARY=${1}
 N_WARM=${2}
 N_SIM=${3}
 #TRACE_DIR=/home/sujeet/spec2017_traces
-TRACE_DIR=/home/sujeet/spec2017_traces
+TRACE_DIR=/home/vavadiya/github/btp/performance-analysis/mirage/dpc3_traces
 TRACE=${5}
 OPTION=${6}
 
