@@ -3870,6 +3870,77 @@ void CACHE::remap_set_ceaser_s()
                                                         }
 
 					newset =   ((uint32_t) (ela & ((1 << lg2(NUM_SET*NUM_SLICES)) - 1)))>>lg2(NUM_SLICES);
+
+					
+				/*
+			check block is dead or not ?
+		assume 50% block is dead randomly 
+			*/
+				srand(time(0));
+				if (block[Sptr][way].isDead == (rand()%2))
+				{
+					/* code */
+					
+                    if(Sptr==newset)
+                    {
+			blocks_less_evicted++;
+			block[Sptr][way].valid = 1;
+                        block[Sptr][way].curr_or_next_key = 1;
+			is_encryption_used_1st_time=0;
+                        continue;
+                    }
+
+
+
+
+					if (block[Sptr][way].valid == 1 && block[Sptr][way].dirty == 1)
+					{
+						PACKET writeback_packet;
+						writeback_packet.fill_level = FILL_DRAM;
+						writeback_packet.cpu = block[Sptr][way].cpu;
+						curr_addr=block[Sptr][way].tag;
+						writeback_packet.address = curr_addr;
+						full_addr       = (curr_addr << LOG2_BLOCK_SIZE) + (block[Sptr][way].full_addr & 0x3F);
+						writeback_packet.full_addr = full_addr;
+						writeback_packet.data = block[Sptr][way].data;
+						writeback_packet.instr_id = block[Sptr][way].instr_id;
+						writeback_packet.ip = 0; // writeback does not have ip
+						writeback_packet.type = WRITEBACK;
+						writeback_packet.event_cycle = current_core_cycle[block[Sptr][way].cpu];
+						int channel = uncore.DRAM.dram_get_channel(block[Sptr][way].tag);
+						if(uncore.DRAM.WQ[channel].occupancy == uncore.DRAM.WQ[channel].SIZE) //If WQ of DRAM is full then remap will stop and it starts again when the WQ have occupancy
+						{
+							 watermark =way;
+                                                         return ;
+						}
+						lower_level->add_wq(&writeback_packet);
+
+						
+						//make this block invalid after sending to lower level
+                    			block[Sptr][way].valid = 0;
+						
+					}
+
+
+					//add the latency for reading cache way
+						if(cache_type == IS_LLC && all_warmup_complete > NUM_CPUS)
+						{
+							cache_stall_cycle=0;
+							// cache_stall_cycle += (  (2*LATENCY)-(2*CEASER_LATENCY)  );
+
+							//write new block => Add LATENCY
+							total_stall_cycle += (   (LATENCY)-(CEASER_LATENCY)   );
+						}
+						else if(all_warmup_complete > NUM_CPUS)
+						{
+							cache_stall_cycle += LATENCY;
+						}
+					
+					continue;
+					
+				}
+				
+
 					if(cache_type==IS_LLC && CEASER_S_LLC == 1) 
 						//newway = remap_find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);
 						newway = llc_find_victim_ceaser_s(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);	
@@ -3973,11 +4044,13 @@ void CACHE::remap_set_ceaser_s()
 					{
 						cache_stall_cycle=0;
 						// cache_stall_cycle += (  (2*LATENCY)-(2*CEASER_LATENCY)  );
+
+						//write new block => Add LATENCY
 						 total_stall_cycle += (   (2*LATENCY)-(2*CEASER_LATENCY)   );
 					}
 					else if(all_warmup_complete > NUM_CPUS)
 					{
-						cache_stall_cycle += 2*LATENCY;
+						cache_stall_cycle += LATENCY;
 					}
 
 	}		//Remap finish
@@ -4015,6 +4088,8 @@ void CACHE::remap_set_ceaser_s()
         	add_stall_cycle_to_queues(); //As the cache is stalled due to remapping all the entries in the response and resquest queues need to wait
 	return; 
 }
+
+
 
 int CACHE::bfs(uint32_t set,int way)
 {

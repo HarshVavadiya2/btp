@@ -9,7 +9,8 @@
 class BLOCK {
   public:
     uint8_t prefetch,
-            used;
+            used,
+            isDead;
 
     int delta,
         depth,
@@ -35,6 +36,7 @@ class BLOCK {
         prefetch = 0;
         dirty = 0;
         used = 0;
+        isDead = 0;
 
         delta = 0;
         depth = 0;
