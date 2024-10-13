@@ -3941,10 +3941,10 @@ void CACHE::remap_set_ceaser_s()
 						lower_level->add_wq(&writeback_packet);
 
 						
+					}
+						
 						//make this block invalid after sending to lower level
                     			block[Sptr][way].valid = 0;
-						
-					}
 
 
 					//add the latency for reading cache way
