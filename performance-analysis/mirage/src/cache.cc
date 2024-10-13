@@ -4079,7 +4079,7 @@ void CACHE::remap_set_ceaser_s()
         //accesses_after_remapping[i].llc_eviction=0;
 	for(int i=0;i<NUM_WAY;i++)
 	{
-		cout<<"SPTR : "<<Sptr<<" Way : "<<i<<" "<<(block[Sptr][i].valid)<<endl;
+		// cout<<"SPTR : "<<Sptr<<" Way : "<<i<<" "<<(block[Sptr][i].valid)<<endl;
 		
 		assert(block[Sptr][i].valid == 0 || block[Sptr][i].curr_or_next_key == 1);
 	}
