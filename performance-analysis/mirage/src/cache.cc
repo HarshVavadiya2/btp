@@ -3990,6 +3990,8 @@ void CACHE::remap_set_ceaser_s()
 			is_encryption_used_1st_time=0;
                         continue;
                     }
+
+					
 					if(block[newset][newway].valid == 1 && block[newset][newway].dirty == 1)
 					{
 						PACKET writeback_packet;
