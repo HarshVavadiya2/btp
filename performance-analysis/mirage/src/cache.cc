@@ -3805,6 +3805,13 @@ int CACHE::empty_blocks()
 
 	return count_blocks;
 }
+
+
+/*
+
+*/
+
+
 void CACHE::remap_set_ceaser_s()
 {
 	assert(cache_type != IS_ITLB || cache_type != IS_DTLB || cache_type != IS_STLB);
@@ -3871,6 +3878,24 @@ void CACHE::remap_set_ceaser_s()
 
 					newset =   ((uint32_t) (ela & ((1 << lg2(NUM_SET*NUM_SLICES)) - 1)))>>lg2(NUM_SLICES);
 
+					if(cache_type==IS_LLC && CEASER_S_LLC == 1) 
+						//newway = remap_find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);
+						newway = llc_find_victim_ceaser_s(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);	
+					  //newway = remap_find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);  
+				       	
+					/*if(rrpv_value(Sptr , way) > rrpv_value(newset,newway) &&  rrpv_value(Sptr , way) == 3   && block[Sptr][way].dirty != 1)
+					{
+						block[Sptr][way].valid=0;
+						remap_llc_update_replacement_state(way,Sptr,way,block[Sptr][way].tag); //rrpv is set to max way
+						continue;	
+					} *///
+				     //newway = llc_find_victim_ceaser_s(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);
+					//else
+ 					//	newway = find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/);//Please note that ip and type paramters are not used in find_victim.
+					assert(newway!=NUM_WAY);
+
+
+
 					
 				/*
 			check block is dead or not ?
@@ -3935,27 +3960,20 @@ void CACHE::remap_set_ceaser_s()
 						{
 							cache_stall_cycle += LATENCY;
 						}
-					
+
+
+
+					/* Countinue for next way to remap as for the current way all operation done 
+					the block is dead
+					 */
 					continue;
 					
 				}
 				
 
-					if(cache_type==IS_LLC && CEASER_S_LLC == 1) 
-						//newway = remap_find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);
-						newway = llc_find_victim_ceaser_s(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);	
-					  //newway = remap_find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);  
-				       	
-					/*if(rrpv_value(Sptr , way) > rrpv_value(newset,newway) &&  rrpv_value(Sptr , way) == 3   && block[Sptr][way].dirty != 1)
-					{
-						block[Sptr][way].valid=0;
-						remap_llc_update_replacement_state(way,Sptr,way,block[Sptr][way].tag); //rrpv is set to max way
-						continue;	
-					} *///
-				     //newway = llc_find_victim_ceaser_s(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/,cur_part);
-					//else
- 					//	newway = find_victim(block[Sptr][way].cpu, block[Sptr][way].instr_id, newset, block[newset], 0/*ip*/, ela, 0/*type*/);//Please note that ip and type paramters are not used in find_victim.
-					assert(newway!=NUM_WAY);
+
+
+
 				#ifdef INCLUSIVE
 					if(call_make_inclusive(newset,newway)==0)
 					{
@@ -4045,7 +4063,7 @@ void CACHE::remap_set_ceaser_s()
 						cache_stall_cycle=0;
 						// cache_stall_cycle += (  (2*LATENCY)-(2*CEASER_LATENCY)  );
 
-						//write new block => Add LATENCY
+						//write new block and read new old block => Add LATENCY 
 						 total_stall_cycle += (   (2*LATENCY)-(2*CEASER_LATENCY)   );
 					}
 					else if(all_warmup_complete > NUM_CPUS)
