@@ -3903,7 +3903,7 @@ void CACHE::remap_set_ceaser_s()
 			*/
 
 				srand(1551);
-				if (block[Sptr][way].isDead == (rand()%3))
+				if (block[Sptr][way].isDead == (rand()%4))
 				{
 					/* code */
 					
