@@ -3901,9 +3901,9 @@ void CACHE::remap_set_ceaser_s()
 			check block is dead or not ?
 		assume 50% block is dead randomly 
 			*/
-		
+
 				srand(1551);
-				if (block[Sptr][way].isDead == (rand()%2))
+				if (block[Sptr][way].isDead == (rand()%3))
 				{
 					/* code */
 					
