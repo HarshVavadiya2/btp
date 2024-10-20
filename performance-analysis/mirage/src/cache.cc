@@ -3913,11 +3913,11 @@ void CACHE::remap_set_ceaser_s()
     // Define the distribution range (1 to 100)
     	std::uniform_int_distribution<int> dist(1, 100);
 
-		
+
 
 				// if (block[Sptr][way].isDead == (rand()%2))
 				// if ((rand()%100) <= 10)
-				if (dist(rng) <= 50)
+				if (dist(rng) <= 40)
 				{
 					/* code */
 					
