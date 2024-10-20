@@ -3911,7 +3911,7 @@ void CACHE::remap_set_ceaser_s()
     // 	std::uniform_int_distribution<int> dist(1, 100);
 
 
-				srand(646148113179);
+				srand(123456789);
 
 				
 
