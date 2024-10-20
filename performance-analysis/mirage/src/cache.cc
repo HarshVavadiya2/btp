@@ -3903,21 +3903,20 @@ void CACHE::remap_set_ceaser_s()
 		assume 50% block is dead randomly 
 			*/
 
-				// srand(646148113179);
+		
+	// 	unsigned seed = 123456789; // Example seed, you can change this value
+    // // Create an instance of the Mersenne Twister RNG
+    // 	std::mt19937 rng(seed);    
+    // // Define the distribution range (1 to 100)
+    // 	std::uniform_int_distribution<int> dist(1, 100);
+
+
+				srand(646148113179);
 
 				
-		
-		unsigned seed = 123456789; // Example seed, you can change this value
-    // Create an instance of the Mersenne Twister RNG
-    	std::mt19937 rng(seed);    
-    // Define the distribution range (1 to 100)
-    	std::uniform_int_distribution<int> dist(1, 100);
-
-
 
 				// if (block[Sptr][way].isDead == (rand()%2))
-				// if ((rand()%100) <= 10)
-				if (dist(rng) <= 20)
+				if ((rand()%100) <= 10)
 				{
 					/* code */
 					
