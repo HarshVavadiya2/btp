@@ -3904,7 +3904,7 @@ void CACHE::remap_set_ceaser_s()
 
 				srand(646148113179);
 				// if (block[Sptr][way].isDead == (rand()%2))
-				if ((rand()%100) <= 30)
+				if ((rand()%100) <= 20)
 				{
 					/* code */
 					
