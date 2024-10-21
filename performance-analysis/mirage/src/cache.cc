@@ -3916,7 +3916,7 @@ void CACHE::remap_set_ceaser_s()
 				
 
 				// if (block[Sptr][way].isDead == (rand()%2))
-				if ((rand()%100) <= 70)
+				if ((rand()%100) <= 100)
 				{
 					/* code */
 					
