@@ -3911,80 +3911,81 @@ void CACHE::remap_set_ceaser_s()
     // 	std::uniform_int_distribution<int> dist(1, 100);
 
 
-				srand(123456789);
-
-				
-
-				// if (block[Sptr][way].isDead == (rand()%2))
-				if ((rand()%10000) < 4000)
-				{
-					/* code */
-					
-                    if(Sptr==newset)
-                    {
-			blocks_less_evicted++;
-			block[Sptr][way].valid = 1;
-                        block[Sptr][way].curr_or_next_key = 1;
-			is_encryption_used_1st_time=0;
-                        continue;
-                    }
+				// srand(123456789);
+				// if ((rand()%10000) < 4000)
+				if(IS_VICTIM_QUEUE == 1){
 
 
-
-
-					if (block[Sptr][way].valid == 1 && block[Sptr][way].dirty == 1)
+					if (block[Sptr][way].isDead == 1)
 					{
-						PACKET writeback_packet;
-						writeback_packet.fill_level = FILL_DRAM;
-						writeback_packet.cpu = block[Sptr][way].cpu;
-						curr_addr=block[Sptr][way].tag;
-						writeback_packet.address = curr_addr;
-						full_addr       = (curr_addr << LOG2_BLOCK_SIZE) + (block[Sptr][way].full_addr & 0x3F);
-						writeback_packet.full_addr = full_addr;
-						writeback_packet.data = block[Sptr][way].data;
-						writeback_packet.instr_id = block[Sptr][way].instr_id;
-						writeback_packet.ip = 0; // writeback does not have ip
-						writeback_packet.type = WRITEBACK;
-						writeback_packet.event_cycle = current_core_cycle[block[Sptr][way].cpu];
-						int channel = uncore.DRAM.dram_get_channel(block[Sptr][way].tag);
-						if(uncore.DRAM.WQ[channel].occupancy == uncore.DRAM.WQ[channel].SIZE) //If WQ of DRAM is full then remap will stop and it starts again when the WQ have occupancy
-						{
-							 watermark =way;
-                                                         return ;
-						}
-						lower_level->add_wq(&writeback_packet);
+						/* code */
+						
+							if(Sptr==newset)
+							{
+								blocks_less_evicted++;
+								block[Sptr][way].valid = 1;
+											block[Sptr][way].curr_or_next_key = 1;
+								is_encryption_used_1st_time=0;
+											continue;
+							}
 
+
+
+
+						if (block[Sptr][way].valid == 1 && block[Sptr][way].dirty == 1)
+						{
+							PACKET writeback_packet;
+							writeback_packet.fill_level = FILL_DRAM;
+							writeback_packet.cpu = block[Sptr][way].cpu;
+							curr_addr=block[Sptr][way].tag;
+							writeback_packet.address = curr_addr;
+							full_addr       = (curr_addr << LOG2_BLOCK_SIZE) + (block[Sptr][way].full_addr & 0x3F);
+							writeback_packet.full_addr = full_addr;
+							writeback_packet.data = block[Sptr][way].data;
+							writeback_packet.instr_id = block[Sptr][way].instr_id;
+							writeback_packet.ip = 0; // writeback does not have ip
+							writeback_packet.type = WRITEBACK;
+							writeback_packet.event_cycle = current_core_cycle[block[Sptr][way].cpu];
+							int channel = uncore.DRAM.dram_get_channel(block[Sptr][way].tag);
+							if(uncore.DRAM.WQ[channel].occupancy == uncore.DRAM.WQ[channel].SIZE) //If WQ of DRAM is full then remap will stop and it starts again when the WQ have occupancy
+							{
+									watermark =way;
+																return ;
+							}
+							lower_level->add_wq(&writeback_packet);
+
+							
+							
+						}
+							
+							//make this block invalid after sending to lower level
+									block[Sptr][way].valid = 0;
+
+
+						//add the latency for reading cache way
+							if(cache_type == IS_LLC && all_warmup_complete > NUM_CPUS)
+							{
+								cache_stall_cycle=0;
+								// cache_stall_cycle += (  (2*LATENCY)-(2*CEASER_LATENCY)  );
+
+								//write new block => Add LATENCY
+								total_stall_cycle += (   (LATENCY)-(CEASER_LATENCY)   );
+							}
+							else if(all_warmup_complete > NUM_CPUS)
+							{
+								cache_stall_cycle += LATENCY;
+							}
+
+
+
+						/* Countinue for next way to remap as for the current way all operation done 
+						the block is dead
+							*/
+						continue;
 						
 					}
-						
-						//make this block invalid after sending to lower level
-                    			block[Sptr][way].valid = 0;
-
-
-					//add the latency for reading cache way
-						if(cache_type == IS_LLC && all_warmup_complete > NUM_CPUS)
-						{
-							cache_stall_cycle=0;
-							// cache_stall_cycle += (  (2*LATENCY)-(2*CEASER_LATENCY)  );
-
-							//write new block => Add LATENCY
-							total_stall_cycle += (   (LATENCY)-(CEASER_LATENCY)   );
-						}
-						else if(all_warmup_complete > NUM_CPUS)
-						{
-							cache_stall_cycle += LATENCY;
-						}
-
-
-
-					/* Countinue for next way to remap as for the current way all operation done 
-					the block is dead
-					 */
-					continue;
 					
 				}
-				
-
 
 
 

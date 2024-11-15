@@ -37,6 +37,11 @@ ${LLC SLICE}                      : Number of 2 MB LLC Slice
 ```
 Use build_champsim.sh script with proper input arguments to compile different randomized caches. The build_champsim.sh contains knob named "CEASER-S" and "partitions" for building different randomized caches :-
 
+use this if victim queue is enabled
+|[CEASER-S] ./build_champsim.sh bimodal no no no srrip 1 0 -1 1 2 1 3 1 0 1 1 |
+if not enabled
+|[CEASER-S] ./build_champsim.sh bimodal no no no srrip 1 0 -1 1 2 1 3 1 0 1 0 |
+
 |Knob|CEASER-S|Partitions| Compile
 |----------|------------|------------|------------|
 |Baseline|0|1|./build_champsim.sh bimodal no no no srrip 1 0 -1  0 1 1 3 0 1 1 |

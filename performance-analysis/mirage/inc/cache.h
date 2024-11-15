@@ -7,6 +7,7 @@
 #include "smt.h"
 #include <bitset>
 #include "ceaser.h"
+#include "victim_queue.h"
 
 // PAGE
 extern uint32_t PAGE_TABLE_LATENCY, SWAP_LATENCY;
@@ -221,6 +222,9 @@ class CACHE : public MEMORY {
                  PQ{NAME + "_PQ", PQ_SIZE}, // prefetch queue
                  MSHR{NAME + "_MSHR", MSHR_SIZE}, // MSHR
                  PROCESSED{NAME + "_PROCESSED", ROB_SIZE}; // processed queue
+
+// Victim queue for the dead block predictions
+    VICTIM_QUEUE Victim_Queue;
 
     uint64_t sim_access[NUM_CPUS][NUM_TYPES],
              sim_hit[NUM_CPUS][NUM_TYPES],

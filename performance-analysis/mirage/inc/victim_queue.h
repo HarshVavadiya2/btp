@@ -1,9 +1,6 @@
 #include <vector>
 #include <stdint.h>
 
-using namespace std;
-
-
 
 #define QUEUE_SIZE 128
 
@@ -19,18 +16,18 @@ public:
 
     VICTIM_Q_BLOCK(uint64_t address,int valid_bit);
     ~VICTIM_Q_BLOCK();
+    VICTIM_Q_BLOCK::VICTIM_Q_BLOCK(uint64_t address = 0, int valid_bit = 0)
+    {
+        full_addr = address;
+        valid = valid_bit;
+        LRU_bit = 0;
+    }
+
+    VICTIM_Q_BLOCK::~VICTIM_Q_BLOCK()
+    {
+    }
 };
 
-VICTIM_Q_BLOCK::VICTIM_Q_BLOCK(uint64_t address = 0,int valid_bit = 0)
-{
-    full_addr = address;
-    valid = valid_bit;
-    LRU_bit = 0;
-}
-
-VICTIM_Q_BLOCK::~VICTIM_Q_BLOCK()
-{
-}
 
 
 
@@ -40,8 +37,8 @@ class VICTIM_QUEUE
 private:
     
 public:
-    std::vector<VICTIM_Q_BLOCK> v_queue;
-    int32_t Max_LRU;
+    std::vector<VICTIM_Q_BLOCK> queue;
+    // int32_t Max_LRU;
     // VICTIM_Q_BLOCK* v_queue;
 
 
@@ -51,10 +48,10 @@ public:
     {
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
-            v_queue.push_back(VICTIM_Q_BLOCK(0,0));
+            queue.push_back(VICTIM_Q_BLOCK(0,0));
         }
         
-        Max_LRU =  0; 
+        // Max_LRU =  0; 
     }
 
     VICTIM_QUEUE::~VICTIM_QUEUE()
@@ -64,65 +61,90 @@ public:
     /*------------------------------Implimentation-------------------------------------*/
 
     // harsh
+    // Add new evicted block to queue for future
+    // Rule number 1 before adding any address to the queue update the queue
     void add_in_v_queue(int64_t address)
     {
         int toBeRemove = 0;
+        int32_t max_lru = 0;
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
-            if (v_queue[i].valid == 0)
+            if (queue[i].valid == 0)
             {
-                v_queue[i].full_addr = address;
-                v_queue[i].valid = 1;
-                v_queue[i].LRU_bit = 0;
-                for (int j = i + 1; j < QUEUE_SIZE; j++)
-                {
-                    v_queue[j].LRU_bit++;
-                }
-                break;
+                queue[i].full_addr = address;
+                queue[i].LRU_bit = 0;
+                queue[i].valid = 1;
+                return;
             }
-            else
+            if (queue[i].LRU_bit > max_lru)
             {
-                if (v_queue[i].LRU_bit > v_queue[toBeRemove].LRU_bit)
-                {
-                    toBeRemove = i;
-                }
-                v_queue[i].LRU_bit++;
+                max_lru = queue[i].LRU_bit;
+                toBeRemove = i;
             }
-            if (i == QUEUE_SIZE - 1)
-            {
-                v_queue[toBeRemove].full_addr = address;
-                v_queue[toBeRemove].valid = 1;
-                v_queue[toBeRemove].LRU_bit = 0;
-            }
+                  
         }
+
+        queue[toBeRemove].full_addr = address;
+        queue[toBeRemove].LRU_bit = 0;
+        queue[toBeRemove].valid = 1;
+                
+        return ;
+
     };
 
     //sushil
-    VICTIM_Q_BLOCK check_queue_for_address(int64_t address)
+    // Give valid queue block on hit
+    // Give invalid queue block on miss
+    VICTIM_Q_BLOCK get_victim_q_block(int64_t address)
     {
+            VICTIM_Q_BLOCK q_block;
+
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
 
-            if (v_queue[i].valid && v_queue[i].full_addr == address)
+            if (queue[i].valid == 1 && queue[i].full_addr == address)
             {
-                v_queue[i].valid = 0;
-                return v_queue[i];
+                q_block.full_addr = queue[i].full_addr;
+                q_block.LRU_bit = queue[i].LRU_bit;
+                q_block.valid = queue[i].valid;
+                queue[i].valid = 0;
+                return q_block;
             }
         }
-        return VICTIM_Q_BLOCK(0, 0);
+            q_block.valid = 0;
+        return q_block;
     };
 
-    void delete_from_v_queue(int64_t address)
-    {
+
+    // Update LRU bit on every access of cache blocks 
+    void update_victim_queue() {
+        
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
-
-            if (v_queue[i].valid && v_queue[i].full_addr == address)
+            if (queue[i].valid)
             {
-                v_queue[i].valid = 0;
-                break;
+                queue[i].LRU_bit++;
+                if (queue[i].LRU_bit >= QUEUE_SIZE)
+                {
+                    queue[i].valid = 0;
+                }
             }
         }
     };
+
+    // void delete_from_v_queue(int64_t address)
+    // {
+    //     for (int i = 0; i < QUEUE_SIZE; i++)
+    //     {
+
+    //         if (v_queue[i].valid && v_queue[i].full_addr == address)
+    //         {
+    //             v_queue[i].valid = 0;
+    //             break;
+    //         }
+    //     }
+    // };
+
+
 };
 

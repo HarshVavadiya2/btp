@@ -2,7 +2,7 @@
 
 if [ "$#" -lt 14 ]; then
     echo "Illegal number of parameters"
-    echo "Usage: ./build_champsim.sh [branch_pred] $1  [l1d_pref] $2 [l2c_pref] $3 [llc_pref] $4 [llc_repl] $5 [num_core]  $6 [is_huge_page] $7 [is_divided_queues] $8 [ceaser_s_llc] ${9} [partitions] ${10} [pipelined_encryption_engine] ${11} [ceaser_latency] ${12}  [Remap] ${13} {remapping_on_eviction] ${14} [LLC_SLICES] ${15}"
+    echo "Usage: ./build_champsim.sh [branch_pred] $1  [l1d_pref] $2 [l2c_pref] $3 [llc_pref] $4 [llc_repl] $5 [num_core]  $6 [is_huge_page] $7 [is_divided_queues] $8 [ceaser_s_llc] ${9} [partitions] ${10} [pipelined_encryption_engine] ${11} [ceaser_latency] ${12}  [Remap] ${13} {remapping_on_eviction] ${14} [LLC_SLICES] ${15} [IS_VICTIM_QUEUE] ${16}"
         
 exit 1
 fi
@@ -23,6 +23,10 @@ CEASER_LATENCY=${12}   				# Encryption Engine Latency
 remapping=${13}  				# 0 : Remapping Off , 1 : Remapping On
 remapping_on_eviction=${14}			# 0 : Remapping is based on LLC Accesses , 1 : Remapping is based on LLC evictions
 LLC_SLICES=${15}  				# Number of LLC SLICE  Default : 1 LLC_SLICE/CORE
+
+#Victim queue enable or not
+IS_VICTIM_QUEUE=${16}
+
 CEASER_L1I=0
 CEASER_L1D=0
 CEASER_L2C=0
@@ -32,7 +36,7 @@ BOLD=$(tput bold)
 NORMAL=$(tput sgr0)
 #################################################
 
-#####################Set CEASER Parameters##############################
+##################### Set CEASER Parameters ##############################
 rm inc/ceaser.h
 touch inc/ceaser.h
 echo -e "#define CEASER_L1I ${CEASER_L1I}"  >> inc/ceaser.h
@@ -43,6 +47,8 @@ echo -e "#define CEASER_LATENCY ${CEASER_LATENCY}"  >> inc/ceaser.h
 echo -e "#define CEASER_rq_wq_ratio ${CEASER_rq_wq_ratio}"  >> inc/ceaser.h
 echo -e "#define Pipelined_Encryption_Engine ${pipelined_encryption_engine}" >> inc/ceaser.h
 echo -e "#define remap_on_evictions ${remapping_on_eviction}" >> inc/ceaser.h
+################### Set Victim Queue Enable or not #######################
+echo -e "#define IS_VICTIM_QUEUE ${IS_VICTIM_QUEUE}"  >> inc/ceaser.h
 
 if [ $remapping -eq 0 ]; then 
 	echo -e "#define No_Remapping"  >> inc/ceaser.h
@@ -194,9 +200,9 @@ echo "Cores: ${NUM_CORE}"
 echo "CEASER_rq_wq_ratio : ${CEASER_rq_wq_ratio}"
 echo "Remapping : ${remapping}"
  if [ "$NUM_CORE" -gt "1" ]; then
-	BINARY_NAME="${BRANCH}-${L1D_PREFETCHER}-${L2C_PREFETCHER}-${LLC_PREFETCHER}-${LLC_REPLACEMENT}-${CEASER_S_LLC}-${partitions}-${pipelined_encryption_engine}-${CEASER_LATENCY}-${remapping}-${remapping_on_eviction}-${NUM_CORE}core_mirage"
+	BINARY_NAME="${BRANCH}-${L1D_PREFETCHER}-${L2C_PREFETCHER}-${LLC_PREFETCHER}-${LLC_REPLACEMENT}-${CEASER_S_LLC}-${partitions}-${pipelined_encryption_engine}-${CEASER_LATENCY}-${remapping}-${remapping_on_eviction}-${IS_VICTIM_QUEUE}-${NUM_CORE}core_mirage"
 else
-        BINARY_NAME="${BRANCH}-${L1D_PREFETCHER}-${L2C_PREFETCHER}-${LLC_PREFETCHER}-${LLC_REPLACEMENT}-${CEASER_S_LLC}-${partitions}-${pipelined_encryption_engine}-${CEASER_LATENCY}-${remapping}-${remapping_on_eviction}-${NUM_CORE}core-${LLC_SLICES}core_llc"
+        BINARY_NAME="${BRANCH}-${L1D_PREFETCHER}-${L2C_PREFETCHER}-${LLC_PREFETCHER}-${LLC_REPLACEMENT}-${CEASER_S_LLC}-${partitions}-${pipelined_encryption_engine}-${CEASER_LATENCY}-${remapping}-${remapping_on_eviction}-${IS_VICTIM_QUEUE}-${NUM_CORE}core-${LLC_SLICES}core_llc"
  fi
 
 echo "Binary: bin/${BINARY_NAME}"
