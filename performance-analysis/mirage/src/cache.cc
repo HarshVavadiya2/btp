@@ -16,6 +16,8 @@ uint32_t is_valid_block_evicted = 0; //this flag is used for doing remap. Call r
     uint64_t pla, ela, curr_addr,full_addr, set_not_remapped=0;
     AES d1;
     PRINCE p;
+
+	bool hit_vcq = false;
 /*------------------------------------------------------------------------------------------*/
 
 void CACHE::set_key(uint32_t set,uint32_t way)
@@ -125,6 +127,8 @@ void CACHE::handle_fill() //Interconnect done
 
 		uint32_t mshr_index = MSHR.next_fill_index;
 		// find victim
+	VCQ.update_victim_queue();
+		hit_vcq = VCQ.check_hit_victim_queue(MSHR.entry[mshr_index].full_addr);
 		
 		uint32_t set = get_set(MSHR.entry[mshr_index].address), way,set1,way1;
 		if(MIRAGE == 1 && cache_type == IS_LLC)
@@ -254,6 +258,7 @@ void CACHE::handle_fill() //Interconnect done
 // is this dirty?
 if (block[set][way].dirty) 
 		{
+
 			if (cache_type == IS_L2C) //L2C --> LLC slice can go either via network or without it[ when it is for connected LLC slice or if INTERCONNECT IS OFF]
 			{
 				if (INTERCONNECT_ON == 0 || get_slice_num(block[set][way].tag) == this_router->id ) //Direct path
@@ -369,6 +374,7 @@ if (block[set][way].dirty)
 					writeback_packet.event_cycle = current_core_cycle[fill_cpu];
 					if(do_fill == 1)
 						lower_level->add_wq(&writeback_packet);
+					VCQ.push_victim_queue(full_addr);
 				}
 				}
 
@@ -449,6 +455,12 @@ if (block[set][way].dirty)
 			if (MSHR.entry[mshr_index].type == LOAD && cache_type == IS_LLC && block[set][way].used == 0){
 				counter_deadblock++;
 			}
+
+		if (block[set][way].valid == 1)
+		{
+			VCQ.push_victim_queue(block[set][way].full_addr);
+		}
+		
 
 			fill_cache(set, way, &MSHR.entry[mshr_index]);
 			// RFO marks cache line dirty
@@ -573,6 +585,8 @@ void CACHE::handle_writeback() //Interconnect done
 	if (writeback_cpu == NUM_CPUS)
 		return;
 
+	VCQ.update_victim_queue();
+
 	// handle the oldest entry
 	if ((WQ.entry[WQ.head].event_cycle <= current_core_cycle[writeback_cpu]) && (WQ.occupancy > 0)) 
 	{
@@ -580,6 +594,9 @@ void CACHE::handle_writeback() //Interconnect done
 		uint32_t set = get_set(WQ.entry[index].address);
 		int way = check_hit(&WQ.entry[index],set);
 		int tag_way,tag_number,tag_set_number;
+
+	hit_vcq = VCQ.check_hit_victim_queue(WQ.entry[index].full_addr);
+
 		if(MIRAGE == 1 && cache_type == IS_LLC)
                 {
                         get_tag_set(WQ.entry[index].address); //sets tag0 and tag1 set number
@@ -974,6 +991,8 @@ void CACHE::handle_writeback() //Interconnect done
 								if(do_fill == 1)
 									lower_level->add_wq(&writeback_packet);
 								}
+
+								VCQ.push_victim_queue(full_addr);
 							}   
 
 #ifdef SANITY_CHECK
@@ -1123,6 +1142,10 @@ void CACHE::handle_read()
 		uint32_t read_cpu = RQ.entry[RQ.head].cpu;
 	  	if(read_cpu == NUM_CPUS)
 		return;
+
+	VCQ.update_victim_queue();
+		hit_vcq = VCQ.check_hit_victim_queue();
+
 		// handle the oldest entry
 		if ((RQ.entry[RQ.head].event_cycle <= current_core_cycle[read_cpu]) && (RQ.occupancy > 0))
 		{
@@ -2510,6 +2533,14 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
 
 	if (block[set][way].valid == 0)
 		block[set][way].valid = 1;
+
+	if(hit_vcq == true) {
+		block[set][way].isDead = 0;
+	}
+	else {
+		block[set][way].isDead = 1;
+	}
+
 	block[set][way].dirty = 0;
 	block[set][way].prefetch = (packet->type == PREFETCH) ? 1 : 0;
 	block[set][way].used = 0;
@@ -4080,6 +4111,8 @@ void CACHE::remap_set_ceaser_s()
 					block[newset][newway].address = ela;
 					block[newset][newway].curr_or_next_key = 1; //Now its encrypted with next_key
 					block[newset][newway].ip = block[Sptr][way].ip; //IP is needed in case of Hawkeye & ShiP replacement policies.
+					block[newset][newway].isDead = block[Sptr][way].isDead;
+
 					total_blocks_remapped++;
 					if (cache_type == IS_LLC) {
 						remap_llc_update_replacement_state(Sptr,way,newset,newway,block[newset][newway].tag);

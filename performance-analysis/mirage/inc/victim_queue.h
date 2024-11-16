@@ -58,7 +58,6 @@ public:
 
     void push_victim_queue(int64_t address);    
     bool check_hit_victim_queue(int64_t address);
-    VICTIM_Q_BLOCK get_victim_q_block(int64_t address);
     void update_victim_queue();
 
 

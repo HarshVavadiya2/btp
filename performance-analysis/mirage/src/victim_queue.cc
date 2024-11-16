@@ -42,7 +42,7 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
 
             if (queue[i].valid == 1 && queue[i].full_addr == address)
             {
-                
+                queue[i].valid = 0;
                 return true;
             }
         }
@@ -50,29 +50,7 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
         return false;
     }
     //sushil
-    // Give valid queue block on hit
-    // Give invalid queue block on miss
-    VICTIM_Q_BLOCK VICTIM_QUEUE:: get_victim_q_block(int64_t address)
-    {
-            VICTIM_Q_BLOCK q_block = VICTIM_Q_BLOCK(0,0);
-
-        for (int i = 0; i < QUEUE_SIZE; i++)
-        {
-
-            if (queue[i].valid == 1 && queue[i].full_addr == address)
-            {
-                q_block.full_addr = queue[i].full_addr;
-                q_block.LRU_bit = queue[i].LRU_bit;
-                q_block.valid = queue[i].valid;
-                queue[i].valid = 0;
-                return q_block;
-            }
-        }
-            q_block.valid = 0;
-        return q_block;
-    };
-
-
+    
     // Update LRU bit on every access of cache blocks 
     void VICTIM_QUEUE:: update_victim_queue() {
         
