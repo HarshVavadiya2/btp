@@ -3961,6 +3961,9 @@ void CACHE::remap_set_ceaser_s()
 							//make this block invalid after sending to lower level
 									block[Sptr][way].valid = 0;
 
+								VCQ.update_victim_queue();
+								VCQ.push_victim_queue(full_addr);
+
 
 						//add the latency for reading cache way
 							if(cache_type == IS_LLC && all_warmup_complete > NUM_CPUS)
@@ -4028,6 +4031,12 @@ void CACHE::remap_set_ceaser_s()
                                                          return ;
 						}
 						lower_level->add_wq(&writeback_packet);
+
+
+						VCQ.update_victim_queue();
+						VCQ.push_victim_queue(full_addr);
+
+
 					}
 					#if victim_cache_is_on
                                         //copy_evicted_block to_victim_cache

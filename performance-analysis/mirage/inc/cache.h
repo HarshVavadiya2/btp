@@ -224,7 +224,7 @@ class CACHE : public MEMORY {
                  PROCESSED{NAME + "_PROCESSED", ROB_SIZE}; // processed queue
 
 // Victim queue for the dead block predictions
-    VICTIM_QUEUE Victim_Queue;
+    VICTIM_QUEUE VCQ;
 
     uint64_t sim_access[NUM_CPUS][NUM_TYPES],
              sim_hit[NUM_CPUS][NUM_TYPES],
