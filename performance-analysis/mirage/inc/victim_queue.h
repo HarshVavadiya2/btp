@@ -14,16 +14,14 @@ public:
     int valid = 0;
     int32_t LRU_bit;
 
-    VICTIM_Q_BLOCK(uint64_t address,int valid_bit);
-    ~VICTIM_Q_BLOCK();
-    VICTIM_Q_BLOCK::VICTIM_Q_BLOCK(uint64_t address = 0, int valid_bit = 0)
+    VICTIM_Q_BLOCK(uint64_t address = 0, int valid_bit = 0)
     {
         full_addr = address;
         valid = valid_bit;
         LRU_bit = 0;
     }
 
-    VICTIM_Q_BLOCK::~VICTIM_Q_BLOCK()
+    ~VICTIM_Q_BLOCK()
     {
     }
 };
