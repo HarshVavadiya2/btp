@@ -1144,7 +1144,7 @@ void CACHE::handle_read()
 		return;
 
 	VCQ.update_victim_queue();
-		hit_vcq = VCQ.check_hit_victim_queue();
+		hit_vcq = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
 
 		// handle the oldest entry
 		if ((RQ.entry[RQ.head].event_cycle <= current_core_cycle[read_cpu]) && (RQ.occupancy > 0))
