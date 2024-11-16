@@ -54,7 +54,7 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
     // Give invalid queue block on miss
     VICTIM_Q_BLOCK VICTIM_QUEUE:: get_victim_q_block(int64_t address)
     {
-            VICTIM_Q_BLOCK q_block;
+            VICTIM_Q_BLOCK q_block = VICTIM_Q_BLOCK(0,0);
 
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
