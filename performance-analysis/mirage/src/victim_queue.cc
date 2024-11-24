@@ -34,9 +34,10 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
 
     };
 
-
+    //use this before update function of victim queue
     bool VICTIM_QUEUE::check_hit_victim_queue(int64_t address) {
 
+        bool is = false;
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
 
@@ -56,7 +57,7 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
         
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
-            if (queue[i].valid)
+            if (queue[i].valid == 1)
             {
                 queue[i].LRU_bit++;
                 if (queue[i].LRU_bit >= QUEUE_SIZE)

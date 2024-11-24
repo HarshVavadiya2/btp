@@ -126,10 +126,7 @@ void CACHE::handle_fill() //Interconnect done
 #endif
 
 		uint32_t mshr_index = MSHR.next_fill_index;
-		// find victim
-	VCQ.update_victim_queue();
-		hit_vcq = VCQ.check_hit_victim_queue(MSHR.entry[mshr_index].full_addr);
-		
+
 		uint32_t set = get_set(MSHR.entry[mshr_index].address), way,set1,way1;
 		if(MIRAGE == 1 && cache_type == IS_LLC)
 		{
@@ -374,7 +371,11 @@ if (block[set][way].dirty)
 					writeback_packet.event_cycle = current_core_cycle[fill_cpu];
 					if(do_fill == 1)
 						lower_level->add_wq(&writeback_packet);
-					VCQ.push_victim_queue(full_addr);
+
+						if(IS_VICTIM_QUEUE == 1) {
+							VCQ.update_victim_queue();
+							VCQ.push_victim_queue(full_addr);
+					}
 				}
 				}
 
@@ -456,10 +457,10 @@ if (block[set][way].dirty)
 				counter_deadblock++;
 			}
 
-		if (block[set][way].valid == 1)
-		{
-			VCQ.push_victim_queue(block[set][way].full_addr);
-		}
+		// if (block[set][way].valid == 1)
+		// {
+		// 	VCQ.push_victim_queue(block[set][way].full_addr);
+		// }
 		
 
 			fill_cache(set, way, &MSHR.entry[mshr_index]);
@@ -585,7 +586,7 @@ void CACHE::handle_writeback() //Interconnect done
 	if (writeback_cpu == NUM_CPUS)
 		return;
 
-	VCQ.update_victim_queue();
+	// VCQ.update_victim_queue();
 
 	// handle the oldest entry
 	if ((WQ.entry[WQ.head].event_cycle <= current_core_cycle[writeback_cpu]) && (WQ.occupancy > 0)) 
@@ -595,7 +596,7 @@ void CACHE::handle_writeback() //Interconnect done
 		int way = check_hit(&WQ.entry[index],set);
 		int tag_way,tag_number,tag_set_number;
 
-	hit_vcq = VCQ.check_hit_victim_queue(WQ.entry[index].full_addr);
+	// hit_vcq = VCQ.check_hit_victim_queue(WQ.entry[index].full_addr);
 
 		if(MIRAGE == 1 && cache_type == IS_LLC)
                 {
@@ -992,7 +993,13 @@ void CACHE::handle_writeback() //Interconnect done
 									lower_level->add_wq(&writeback_packet);
 								}
 
-								VCQ.push_victim_queue(full_addr);
+								// VCQ.push_victim_queue(full_addr);
+
+									if(IS_VICTIM_QUEUE == 1) {
+										VCQ.update_victim_queue();
+										VCQ.push_victim_queue(full_addr);
+									}
+
 							}   
 
 #ifdef SANITY_CHECK
@@ -1143,8 +1150,8 @@ void CACHE::handle_read()
 	  	if(read_cpu == NUM_CPUS)
 		return;
 
-	VCQ.update_victim_queue();
-		hit_vcq = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
+	// VCQ.update_victim_queue();
+	// 	hit_vcq = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
 
 		// handle the oldest entry
 		if ((RQ.entry[RQ.head].event_cycle <= current_core_cycle[read_cpu]) && (RQ.occupancy > 0))
@@ -1314,6 +1321,8 @@ void CACHE::handle_read()
 					block[set][way].prefetch = 0;
 				}
 				block[set][way].used = 1;
+
+				block[set][way].isDead = 0;
 
 				HIT[RQ.entry[index].type]++;
 				ACCESS[RQ.entry[index].type]++;
@@ -2534,11 +2543,16 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
 	if (block[set][way].valid == 0)
 		block[set][way].valid = 1;
 
-	if(hit_vcq == true) {
-		block[set][way].isDead = 0;
-	}
-	else {
-		block[set][way].isDead = 1;
+	if(IS_VICTIM_QUEUE == 1) {
+
+		hit_vcq = VCQ.check_hit_victim_queue(packet->full_addr);
+
+			if(hit_vcq == true) {
+				block[set][way].isDead = 0;
+			}
+			else {
+				block[set][way].isDead = 1;
+			}
 	}
 
 	block[set][way].dirty = 0;
@@ -3992,8 +4006,8 @@ void CACHE::remap_set_ceaser_s()
 							//make this block invalid after sending to lower level
 									block[Sptr][way].valid = 0;
 
-								VCQ.update_victim_queue();
-								VCQ.push_victim_queue(full_addr);
+								// VCQ.update_victim_queue();
+								// VCQ.push_victim_queue(full_addr);
 
 
 						//add the latency for reading cache way
@@ -4064,8 +4078,8 @@ void CACHE::remap_set_ceaser_s()
 						lower_level->add_wq(&writeback_packet);
 
 
-						VCQ.update_victim_queue();
-						VCQ.push_victim_queue(full_addr);
+						// VCQ.update_victim_queue();
+						// VCQ.push_victim_queue(full_addr);
 
 
 					}

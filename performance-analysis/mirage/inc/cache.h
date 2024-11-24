@@ -223,7 +223,7 @@ class CACHE : public MEMORY {
                  MSHR{NAME + "_MSHR", MSHR_SIZE}, // MSHR
                  PROCESSED{NAME + "_PROCESSED", ROB_SIZE}; // processed queue
 
-// Victim queue for the dead block predictions
+    // Victim queue for the dead block predictions
     VICTIM_QUEUE VCQ;
 
     uint64_t sim_access[NUM_CPUS][NUM_TYPES],

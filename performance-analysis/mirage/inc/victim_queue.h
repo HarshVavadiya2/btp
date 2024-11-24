@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 
-#define QUEUE_SIZE 16
+#define QUEUE_SIZE 256
 
 
 
