@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 
-#define QUEUE_SIZE 128
+#define QUEUE_SIZE 16000
 
 
 
@@ -13,12 +13,14 @@ public:
     uint64_t full_addr;
     int valid = 0;
     int32_t LRU_bit;
+    int check = 0;
 
-    VICTIM_Q_BLOCK(uint64_t address = 0, int valid_bit = 0)
+    VICTIM_Q_BLOCK(uint64_t address = 0, int valid_bit = 0,int check_bit = 0)
     {
         full_addr = address;
         valid = valid_bit;
         LRU_bit = 0;
+        check = check_bit;
     }
 
     ~VICTIM_Q_BLOCK()
@@ -43,7 +45,7 @@ public:
     {
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
-            queue.push_back(VICTIM_Q_BLOCK(0,0));
+            queue.push_back(VICTIM_Q_BLOCK(0,0,0));
         }
         
         // Max_LRU =  0; 
@@ -59,6 +61,9 @@ public:
     void push_victim_queue(int64_t address);    
     bool check_hit_victim_queue(int64_t address);
     void update_victim_queue();
+    void delete_victim_queue(int64_t address);
+    void set_victim_queue(int64_t address);
+    int check_set_victim_queue(int64_t address);
 
 
 };

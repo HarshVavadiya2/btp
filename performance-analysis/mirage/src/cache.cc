@@ -153,6 +153,10 @@ void CACHE::handle_fill() //Interconnect done
                              	set =ceaser_s_next_set[part];
 			//CEASER_S Replacement policy
                       	way = llc_find_victim_ceaser_s(fill_cpu, MSHR.entry[mshr_index].instr_id, set, block[set], MSHR.entry[mshr_index].ip, full_addr, MSHR.entry[mshr_index].type,part);
+
+						if(IS_VICTIM_QUEUE == 1) {
+							VCQ.delete_victim_queue(block[set][way].full_addr);
+						}
                 }
 		else if (cache_type == IS_LLC && CEASER_S_LLC != 1) 
 		{
@@ -372,10 +376,6 @@ if (block[set][way].dirty)
 					if(do_fill == 1)
 						lower_level->add_wq(&writeback_packet);
 
-						if(IS_VICTIM_QUEUE == 1) {
-							VCQ.update_victim_queue();
-							VCQ.push_victim_queue(full_addr);
-					}
 				}
 				}
 
@@ -389,6 +389,7 @@ if (block[set][way].dirty)
 			
 		}
 	}
+
 		if (do_fill)
 		{
 			//This check is to determine before-hand if packet will get stuck in network queue and return without processing the packet or making any changes to other variables
@@ -425,6 +426,18 @@ if (block[set][way].dirty)
 			if (cache_type == IS_LLC) 
 			{
 				llc_update_replacement_state(fill_cpu, set, way, MSHR.entry[mshr_index].full_addr, MSHR.entry[mshr_index].ip, block[set][way].full_addr, MSHR.entry[mshr_index].type, 0);
+				
+						// if(IS_VICTIM_QUEUE == 1) {
+						// 			hit_vcq = VCQ.check_hit_victim_queue( MSHR.entry[mshr_index].full_addr);
+
+						// 			if(true == hit_vcq) {
+						// 				VCQ.set_victim_queue( MSHR.entry[mshr_index].full_addr);
+						// 			}
+						// 			else {
+						// 				VCQ.push_victim_queue(full_addr);
+
+						// 			}
+						// }
 			}
 			else
 				update_replacement_state(fill_cpu, set, way, MSHR.entry[mshr_index].full_addr, MSHR.entry[mshr_index].ip, block[set][way].full_addr, MSHR.entry[mshr_index].type, 0);
@@ -596,7 +609,6 @@ void CACHE::handle_writeback() //Interconnect done
 		int way = check_hit(&WQ.entry[index],set);
 		int tag_way,tag_number,tag_set_number;
 
-	// hit_vcq = VCQ.check_hit_victim_queue(WQ.entry[index].full_addr);
 
 		if(MIRAGE == 1 && cache_type == IS_LLC)
                 {
@@ -995,10 +1007,18 @@ void CACHE::handle_writeback() //Interconnect done
 
 								// VCQ.push_victim_queue(full_addr);
 
-									if(IS_VICTIM_QUEUE == 1) {
-										VCQ.update_victim_queue();
-										VCQ.push_victim_queue(full_addr);
-									}
+									// if(IS_VICTIM_QUEUE == 1) {
+									// 		hit_vcq = VCQ.check_hit_victim_queue(WQ.entry[index].full_addr);
+
+									// 		if(true == hit_vcq) {
+									// 				VCQ.set_victim_queue(full_addr);
+
+									// 		}
+									// 		else {
+									// 			VCQ.push_victim_queue(full_addr);
+
+									// 		}
+									// }
 
 							}   
 
@@ -1151,7 +1171,15 @@ void CACHE::handle_read()
 		return;
 
 	// VCQ.update_victim_queue();
-	// 	hit_vcq = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
+		hit_vcq = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
+
+		if ((true == hit_vcq) && (IS_LLC == cache_type))
+		{
+										VCQ.set_victim_queue(RQ.entry[RQ.head].full_addr);
+		}
+		else if(IS_LLC == cache_type) {
+				VCQ.push_victim_queue(RQ.entry[RQ.head].full_addr);
+		}
 
 		// handle the oldest entry
 		if ((RQ.entry[RQ.head].event_cycle <= current_core_cycle[read_cpu]) && (RQ.occupancy > 0))
@@ -2543,15 +2571,17 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
 	if (block[set][way].valid == 0)
 		block[set][way].valid = 1;
 
-	if(IS_VICTIM_QUEUE == 1) {
+	if(IS_LLC == cache_type && 1 == IS_VICTIM_QUEUE) {
 
 		hit_vcq = VCQ.check_hit_victim_queue(packet->full_addr);
 
 			if(hit_vcq == true) {
 				block[set][way].isDead = 0;
+										VCQ.set_victim_queue(packet->full_addr);
 			}
 			else {
 				block[set][way].isDead = 1;
+				VCQ.push_victim_queue(packet->full_addr);
 			}
 	}
 
@@ -3959,11 +3989,15 @@ void CACHE::remap_set_ceaser_s()
 				// srand(123456789);
 				// if ((rand()%10000) < 4000)
 				if(IS_VICTIM_QUEUE == 1){
+		
+				hit_vcq = VCQ.check_hit_victim_queue(block[Sptr][way].full_addr);
+				int check_bit = VCQ.check_set_victim_queue(block[Sptr][way].full_addr);
+					
+					
 
-
-					if (block[Sptr][way].isDead == 1)
+					if (true == hit_vcq && 0 == check_bit)
 					{
-						/* code */
+							VCQ.delete_victim_queue(block[Sptr][way].full_addr);
 						
 							if(Sptr==newset)
 							{

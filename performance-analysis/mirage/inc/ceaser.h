@@ -7,3 +7,5 @@
 #define Pipelined_Encryption_Engine 1
 #define remap_on_evictions 1
 #define No_Remapping
+// Victim Queue for dead blocks
+#define IS_VICTIM_QUEUE 0

@@ -9,26 +9,42 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
     {
         int toBeRemove = 0;
         int32_t max_lru = 0;
+        bool is = false;
         for (int i = 0; i < QUEUE_SIZE; i++)
         {
-            if (queue[i].valid == 0)
+            if ((queue[i].valid == 0) && (!is))
             {
                 queue[i].full_addr = address;
                 queue[i].LRU_bit = 0;
+                queue[i].check = 0;
                 queue[i].valid = 1;
-                return;
+                is = true;
+                // return;
             }
-            if (queue[i].LRU_bit > max_lru)
+            else if (queue[i].valid == 1) 
             {
-                max_lru = queue[i].LRU_bit;
+                queue[i].LRU_bit++;
+                /* code */
+            }
+            
+            if (queue[i].valid == 1 && queue[i].LRU_bit == QUEUE_SIZE)
+            {
+                queue[i].valid = 0;
                 toBeRemove = i;
             }
                   
         }
 
+        if (is)
+        {
+            return;
+        }
+        
+
         queue[toBeRemove].full_addr = address;
         queue[toBeRemove].LRU_bit = 0;
         queue[toBeRemove].valid = 1;
+        queue[toBeRemove].check = 0;
                 
         return ;
 
@@ -43,7 +59,6 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
 
             if (queue[i].valid == 1 && queue[i].full_addr == address)
             {
-                queue[i].valid = 0;
                 return true;
             }
         }
@@ -68,15 +83,48 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
         }
     };
 
-    // void delete_from_v_queue(int64_t address)
-    // {
-    //     for (int i = 0; i < QUEUE_SIZE; i++)
-    //     {
+    void VICTIM_QUEUE:: delete_victim_queue(int64_t address)
+    {
+        for (int i = 0; i < QUEUE_SIZE; i++)
+        {
 
-    //         if (v_queue[i].valid && v_queue[i].full_addr == address)
-    //         {
-    //             v_queue[i].valid = 0;
-    //             break;
-    //         }
-    //     }
-    // };
+            if ((1 == queue[i].valid) && queue[i].full_addr == address)
+            {
+                queue[i].valid = 0;
+                break;
+            }
+        }
+
+        return;
+    };
+
+    void VICTIM_QUEUE:: set_victim_queue(int64_t address) {
+        
+        for (int i = 0; i < QUEUE_SIZE; i++)
+        {
+
+            if ((1 == queue[i].valid) && queue[i].full_addr == address)
+            {
+                queue[i].check = 1;
+                break;
+            }
+        }
+
+        return;
+    }
+
+    
+    int VICTIM_QUEUE:: check_set_victim_queue(int64_t address) {
+        
+        for (int i = 0; i < QUEUE_SIZE; i++)
+        {
+
+            if ((1 == queue[i].valid) && queue[i].full_addr == address)
+            {
+                return queue[i].check;
+            }
+        }
+
+        return 0;
+    }
+    
