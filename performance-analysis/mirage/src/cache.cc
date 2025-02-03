@@ -2576,8 +2576,8 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
 		hit_vcq = VCQ.check_hit_victim_queue(packet->full_addr);
 
 			if(hit_vcq == true) {
-				block[set][way].isDead = 0;
-										VCQ.set_victim_queue(packet->full_addr);
+						block[set][way].isDead = 0;
+								VCQ.set_victim_queue(packet->full_addr);
 			}
 			else {
 				block[set][way].isDead = 1;
@@ -4111,6 +4111,11 @@ void CACHE::remap_set_ceaser_s()
 						}
 						lower_level->add_wq(&writeback_packet);
 
+						
+					if(IS_VICTIM_QUEUE == 1){
+		
+							VCQ.delete_victim_queue(block[Sptr][way].full_addr);
+					}
 
 						// VCQ.update_victim_queue();
 						// VCQ.push_victim_queue(full_addr);
