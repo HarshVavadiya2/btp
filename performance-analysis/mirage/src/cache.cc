@@ -1173,13 +1173,13 @@ void CACHE::handle_read()
 	// VCQ.update_victim_queue();
 		hit_vcq = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
 
-		if ((true == hit_vcq) && (IS_LLC == cache_type))
+		if ((true == hit_vcq) && (IS_LLC == cache_type))  //
 		{
 										VCQ.set_victim_queue(RQ.entry[RQ.head].full_addr);
 		}
-		else if(IS_LLC == cache_type) {
-				VCQ.push_victim_queue(RQ.entry[RQ.head].full_addr);
-		}
+		// else if(IS_LLC == cache_type) {
+		// 		VCQ.push_victim_queue(RQ.entry[RQ.head].full_addr);
+		// }
 
 		// handle the oldest entry
 		if ((RQ.entry[RQ.head].event_cycle <= current_core_cycle[read_cpu]) && (RQ.occupancy > 0))
@@ -4114,7 +4114,9 @@ void CACHE::remap_set_ceaser_s()
 						
 					if(IS_VICTIM_QUEUE == 1){
 		
-							VCQ.delete_victim_queue(block[Sptr][way].full_addr);
+							// VCQ.delete_victim_queue(block[Sptr][way].full_addr);
+							VCQ.delete_victim_queue(block[newset][newway].full_addr);
+
 					}
 
 						// VCQ.update_victim_queue();
