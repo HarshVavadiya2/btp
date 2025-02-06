@@ -4386,7 +4386,7 @@ void CACHE::check_llc_access() //Remaps cache set when LLC accesses/evictions re
 	if( all_warmup_complete > NUM_CPUS)
 		Actr++;
 	//assert(Actr <= APLR*NUM_WAY);
-	if(Actr >= 40)     //APLR*NUM_WAY)
+	if(Actr >= APLR*NUM_WAY)    //APLR*NUM_WAY)
 	{ 	
 		watermark = 0;	
 		is_remap_complete = 0;
