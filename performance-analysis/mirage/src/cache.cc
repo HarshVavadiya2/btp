@@ -3997,8 +3997,6 @@ void CACHE::remap_set_ceaser_s()
 
 					if (true == hit_vcq && 0 == check_bit)
 					{
-							VCQ.delete_victim_queue(block[Sptr][way].full_addr);
-						
 							if(Sptr==newset)
 							{
 								blocks_less_evicted++;
@@ -4008,6 +4006,9 @@ void CACHE::remap_set_ceaser_s()
 											continue;
 							}
 
+							
+							VCQ.delete_victim_queue(block[Sptr][way].full_addr); // If (Sptr != newset) then only the block is evicted from the queue
+						
 
 
 
@@ -4063,6 +4064,9 @@ void CACHE::remap_set_ceaser_s()
 						/* Countinue for next way to remap as for the current way all operation done 
 						the block is dead
 							*/
+
+							total_deadb_evicted_onRemapping++;//stats for the dead blocks evicted without remapping
+
 						continue;
 						
 					}

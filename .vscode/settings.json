@@ -4,6 +4,8 @@
         "compare": "cpp",
         "cstdint": "cpp",
         "bitset": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }
