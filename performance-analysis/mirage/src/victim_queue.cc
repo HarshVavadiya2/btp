@@ -51,7 +51,7 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
     };
 
     //use this before update function of victim queue
-    bool VICTIM_QUEUE::check_hit_victim_queue(int64_t address) {
+    int VICTIM_QUEUE::check_hit_victim_queue(int64_t address) {
 
         bool is = false;
         for (int i = 0; i < QUEUE_SIZE; i++)
@@ -59,11 +59,11 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
 
             if (queue[i].valid == 1 && queue[i].full_addr == address)
             {
-                return true;
+                return i;
             }
         }
         
-        return false;
+        return -1;
     }
     //sushil
     
@@ -98,17 +98,9 @@ void VICTIM_QUEUE::push_victim_queue(int64_t address)
         return;
     };
 
-    void VICTIM_QUEUE:: set_victim_queue(int64_t address) {
+    void VICTIM_QUEUE:: set_victim_queue(int index) {
         
-        for (int i = 0; i < QUEUE_SIZE; i++)
-        {
-
-            if ((1 == queue[i].valid) && queue[i].full_addr == address)
-            {
-                queue[i].check = 1;
-                break;
-            }
-        }
+        queue[index].check = 1;
 
         return;
     }

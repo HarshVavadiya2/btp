@@ -59,10 +59,10 @@ public:
     /*------------------------------Implimentation-------------------------------------*/
 
     void push_victim_queue(int64_t address);    
-    bool check_hit_victim_queue(int64_t address);
+    int check_hit_victim_queue(int64_t address);
     void update_victim_queue();
     void delete_victim_queue(int64_t address);
-    void set_victim_queue(int64_t address);
+    void set_victim_queue(int index);
     int check_set_victim_queue(int64_t address);
 
 
