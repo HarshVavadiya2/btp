@@ -172,7 +172,7 @@ class CACHE : public MEMORY {
 	uint8_t *out, *in;
 	int remap_Table_size=0,remap_Table[LLC_SET];
 	uint64_t count_remap=0, blocks_less_evicted=0,invalid_blocks_before_remapping=0;
-	uint64_t reuse_distance[2048*100],victim_hit,total_blocks_remapped=0,total_deadb_evicted_onRemapping = 0;
+	uint64_t reuse_distance[2048*100],victim_hit,total_blocks_remapped=0,total_deadb_evicted_onRemapping = 0, pollution_block = 0 , hit_for_pollution_block = 0;
 	uint64_t dead_block=0, total_bfs=0;
     //Deadblocks
     uint64_t counter_deadblock=0;

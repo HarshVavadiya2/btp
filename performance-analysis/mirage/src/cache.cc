@@ -9,6 +9,10 @@
 #include <random>
 uint64_t l2pf_access = 0;
 uint32_t is_valid_block_evicted = 0; //this flag is used for doing remap. Call remap only on evictions of valid cache block from the LLC
+
+// queue to store address of the pollution blocks
+queue<uint64_t> pollution_blocks_queue;
+
 /*CEASER-S
         // pla: physical  line address
 	// ela: encrypted line address
@@ -2582,6 +2586,29 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
 			else {
 				block[set][way].isDead = 1;
 				VCQ.push_victim_queue(packet->full_addr);
+
+				// search packet->full_addr in the pollution_blocks_queue
+				
+			std::queue<uint64_t> temp_queue;
+			bool found = false;
+			size_t queue_size = pollution_blocks_queue.size();
+
+			while (queue_size--) {
+				uint64_t addr = pollution_blocks_queue.front();
+				pollution_blocks_queue.pop();
+				pollution_blocks_queue.push(addr);
+				if (addr == packet->full_addr) {
+					found = true;
+					break;
+				}
+			}
+
+			if (found) {
+				hit_for_pollution_block++;
+			}
+
+
+
 			}
 	}
 
@@ -3995,7 +4022,7 @@ void CACHE::remap_set_ceaser_s()
 					
 					
 
-					if (hit_index != -1 && VCQ.queue[hit_index].check_bit == 0)
+					if (hit_index != -1 && VCQ.queue[hit_index].check == 0)
 					{
 							if(Sptr==newset)
 							{
@@ -4033,9 +4060,13 @@ void CACHE::remap_set_ceaser_s()
 																return ;
 							}
 							lower_level->add_wq(&writeback_packet);
-
 							
 							
+							
+						}
+						if(block[newset][newway].valid == 1){
+							pollution_block++;
+							pollution_blocks_queue.push(block[newset][newway].full_addr);
 						}
 							
 							//make this block invalid after sending to lower level
@@ -4128,6 +4159,12 @@ void CACHE::remap_set_ceaser_s()
 
 
 					}
+
+					if(block[newset][newway].valid == 1){
+						pollution_block++;
+						pollution_blocks_queue.push(block[newset][newway].full_addr);
+					}
+
 					#if victim_cache_is_on
                                         //copy_evicted_block to_victim_cache
                                         if(block[newset][newway].valid == 1 && block[newset][newway].dirty != 1)

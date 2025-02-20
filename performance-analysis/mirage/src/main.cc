@@ -1618,6 +1618,8 @@ if( CEASER_S_LLC == 1)
 		  cout<<"Total Invalid Blocks Before Remapping Per set: "<<(float)uncore.LLC[x]->invalid_blocks_before_remapping/(float)uncore.LLC[x]->total_sets_remapped<<endl;
 		  cout<<"Total Blocks Remapped : "<<uncore.LLC[x]->total_blocks_remapped<<" Average number of blocks remapped per set : "<<(float)uncore.LLC[x]->total_blocks_remapped/(float)uncore.LLC[x]->total_sets_remapped<<endl;
           cout<<"Total Dead Blocks Dropped on Remapped : "<<uncore.LLC[x]->total_deadb_evicted_onRemapping<<endl;
+          cout<<"Pollution Blocks: "<<uncore.LLC[x]->pollution_block<<endl;
+          cout<<"Hit Pollution Blocks: "<<uncore.LLC[x]->hit_for_pollution_block<<endl;
 		  cout<<endl;
 	}
 }		
