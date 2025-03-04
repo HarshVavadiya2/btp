@@ -696,6 +696,19 @@ void CACHE::handle_writeback() //Interconnect done
 			sim_hit[writeback_cpu][WQ.entry[index].type]++;
 			sim_access[writeback_cpu][WQ.entry[index].type]++;
 
+			if (1 == IS_VICTIM_QUEUE)
+			{
+				int index_vic = VCQ.check_hit_victim_queue(block[set][way].full_addr);
+				if((-1) != index_vic) {
+					VCQ.set_victim_queue(index_vic);
+				} 
+				else {
+					VCQ.push_victim_queue(block[set][way].full_addr);
+				}
+
+			}
+			
+
 			// mark dirty
 			block[set][way].dirty = 1;
 
@@ -867,6 +880,11 @@ void CACHE::handle_writeback() //Interconnect done
                         			else
                                 			set =ceaser_s_next_set[part];
                         			way = llc_find_victim_ceaser_s(writeback_cpu, WQ.entry[index].instr_id, set, block[set], WQ.entry[index].ip, WQ.entry[index].full_addr, WQ.entry[index].type,part); 
+
+									if(1 == IS_VICTIM_QUEUE && 1 == block[set][way].valid) {
+										VCQ.delete_victim_queue(block[set][way].full_addr);
+									}
+
                 	 		}
 				 	else //baseline
 				   		way = llc_find_victim(writeback_cpu, WQ.entry[index].instr_id, set, block[set], WQ.entry[index].ip, WQ.entry[index].full_addr, WQ.entry[index].type);
@@ -1171,12 +1189,12 @@ void CACHE::handle_read()
 		return;
 
 	// VCQ.update_victim_queue();
-		hit_index = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
+		// hit_index = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
 
-		if ((hit_index != -1) && (IS_LLC == cache_type))  //
-		{
-			VCQ.set_victim_queue(hit_index);
-		}
+		// if ((hit_index != -1) && (IS_LLC == cache_type))  //
+		// {
+		// 	VCQ.set_victim_queue(hit_index);
+		// }
 		// else if(IS_LLC == cache_type) {
 		// 		VCQ.push_victim_queue(RQ.entry[RQ.head].full_addr);
 		// }
@@ -1237,6 +1255,20 @@ void CACHE::handle_read()
 			#endif
 			if (way >= 0) // read hit
 			{ 
+				if(1 == IS_VICTIM_QUEUE && IS_LLC == cache_type) {
+					
+					hit_index = VCQ.check_hit_victim_queue(RQ.entry[RQ.head].full_addr);
+
+					if ((hit_index != -1) && (IS_LLC == cache_type))  //
+					{
+						VCQ.set_victim_queue(hit_index);
+					}
+					else if((IS_LLC == cache_type)) {
+						VCQ.push_victim_queue(RQ.entry[RQ.head].full_addr);
+					}
+				}
+
+
 				//This check is to determine before-hand if packet will get stuck in network queue and return without processing
 				if ( INTERCONNECT_ON && cache_type == IS_LLC && RQ.entry[index].fill_level < fill_level )
 				{
@@ -4115,6 +4147,8 @@ void CACHE::remap_set_ceaser_s()
 						}
 						lower_level->add_wq(&writeback_packet);
 
+					}
+
 						
 					if(IS_VICTIM_QUEUE == 1){
 		
@@ -4126,8 +4160,6 @@ void CACHE::remap_set_ceaser_s()
 						// VCQ.update_victim_queue();
 						// VCQ.push_victim_queue(full_addr);
 
-
-					}
 					#if victim_cache_is_on
                                         //copy_evicted_block to_victim_cache
                                         if(block[newset][newway].valid == 1 && block[newset][newway].dirty != 1)
