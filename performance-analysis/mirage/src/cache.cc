@@ -4027,7 +4027,7 @@ void CACHE::remap_set_ceaser_s()
 					
 					
 
-					if (hit_index != -1 && VCQ.queue[hit_index].check_bit == 0)
+					if (hit_index != -1 && VCQ.queue[hit_index].check == 0)
 					{
 							if(Sptr==newset)
 							{
